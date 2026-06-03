@@ -113,10 +113,11 @@
 </div>
 
 <script>
-  const params  = new URLSearchParams(window.location.search);
-  const pid     = params.get("pid")  || "UNKNOWN";
-  const port    = params.get("port") || "54321";
-  const SERVER  = "http://localhost:" + port;
+  // GASのURL（直接埋め込み）
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbwnV0ndg5DOaNevaKvUkjf9DDsHOa5vKsP95LbImucMcYwtN3HYs0rocDy6J0FybqxX/exec";
+
+  const params = new URLSearchParams(window.location.search);
+  const pid    = params.get("pid") || "UNKNOWN";
 
   document.getElementById("pidBadge").textContent  = pid;
   document.getElementById("dateBadge").textContent =
@@ -153,15 +154,15 @@
     };
 
     try {
-      // localhost のPythonサーバーにPOST（CORSなし・セキュリティ制限なし）
-      const res = await fetch(SERVER, {
+      // https同士なのでCORS制限なし・no-corsで送信
+      await fetch(GAS_URL, {
         method:  "POST",
-        headers: { "Content-Type": "application/json" },
+        mode:    "no-cors",
+        headers: { "Content-Type": "text/plain" },
         body:    JSON.stringify(data)
       });
-      showSuccess(res.ok);
+      showSuccess(true);
     } catch(e) {
-      // サーバーに届かなかった場合
       showSuccess(false);
     }
   }
@@ -173,10 +174,9 @@
     document.getElementById("successPid").textContent = pid + " — お疲れ様でした。";
     if (!ok) {
       const tag = document.getElementById("saveTag");
-      tag.innerHTML = "<span>⚠️</span> ローカルに保存（通信エラー）";
+      tag.innerHTML = "<span>⚠️</span> 通信エラー（データは未保存）";
       tag.style.color = "#f7a94f";
     }
-
     let count = 3;
     const cd = document.getElementById("countdown");
     const timer = setInterval(() => {
